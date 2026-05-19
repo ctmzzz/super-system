@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成绩分析系统 - 登录</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/login.css">
+
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            const kicked = params.get('kicked') === '1';
+            const frozen = params.get('frozen') === '1';
+            const timeout = params.get('timeout') === '1';
+            if (!kicked && !frozen && !timeout) return;
+
+            if (frozen) alert('账户异常，已被冻结。请与管理员联系。');
+            else if (timeout) alert('您已超过 15 分钟未操作，登录状态已失效。\n\n请重新登录。');
+            else alert('您的账号已在其他设备登录，您已被强制下线。\n\n请重新登录。');
+
+            fetch('/api/logout', { method: 'POST' }).catch(function () {});
+            if (window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.href.split('?')[0]);
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="universe-bg"></div>
+    <canvas class="starfield" id="starfield"></canvas>
+    <div class="grid-matrix"></div>
+    <div class="hex-grid"></div>
+    <div class="scan-beam"></div>
+
+    <div class="corner-accent tl"></div>
+    <div class="corner-accent tr"></div>
+    <div class="corner-accent bl"></div>
+    <div class="corner-accent br"></div>
+
+    <div class="main-stage">
+        <div class="holo-platform">
+            <div class="login-module">
+                <div class="cyber-card">
+                    <div class="frame-corner tl"></div>
+                    <div class="frame-corner tr"></div>
+                    <div class="frame-corner bl"></div>
+                    <div class="frame-corner br"></div>
+                    
+                    <div class="brand-zone">
+                        <div class="logo-core">
+                            <div class="orbit-system"><div class="orbit-dot"></div></div>
+                            <div class="orbit-system"><div class="orbit-dot"></div></div>
+                            <div class="orbit-system"><div class="orbit-dot"></div></div>
+                            <svg class="core-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="3.5" fill="none" stroke="#22d3ee" stroke-width="1.5"/>
+                                <ellipse cx="12" cy="12" rx="11" ry="4.5" fill="none" stroke="#22d3ee" stroke-width="0.8" opacity="0.6"/>
+                                <ellipse cx="12" cy="12" rx="11" ry="4.5" fill="none" stroke="#a855f7" stroke-width="0.8" opacity="0.5" transform="rotate(60 12 12)"/>
+                                <ellipse cx="12" cy="12" rx="11" ry="4.5" fill="none" stroke="#a855f7" stroke-width="0.8" opacity="0.5" transform="rotate(120 12 12)"/>
+                                <circle cx="12" cy="12" r="2" fill="#22d3ee"/>
+                                <circle cx="12" cy="12" r="1" fill="#fff"/>
+                            </svg>
+                        </div>
+                        <h1 class="system-name">欢迎进入 综合平台</h1>
+                        <p class="system-tagline">智能成绩分析系统</p>
+                    </div>
+                    
+                    <div id="errorMessage" class="alert-box"></div>
+                    
+                    <div class="input-cluster">
+                        <div class="input-field">
+                            <input type="text" id="employee_id" placeholder="请输入账号" autocomplete="username">
+                            <svg class="field-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        </div>
+                    </div>
+                
+                    <div class="input-cluster">
+                        <div class="input-field">
+                            <input type="password" id="password" placeholder="请输入密码" autocomplete="current-password">
+                            <svg class="field-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                        </div>
+                    </div>
+                    
+                    <div class="input-cluster" id="captchaGroup">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <img id="captchaImage" src="" alt="验证码" title="点击刷新验证码">
+                            <div class="input-field" style="flex:1;">
+                                <input type="text" id="captcha" placeholder="请输入验证码" autocomplete="off" maxlength="4">
+                                <svg class="field-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="loginBtn" class="auth-button">登 录</button>
+                </div>
+            </div>
+
+            <div class="visual-display">
+                <div class="planet-system">
+                    <div class="atmosphere-ring"></div>
+                    <div class="atmosphere-ring"></div>
+                    <div class="atmosphere-ring"></div>
+                    <div class="atmosphere-ring"></div>
+                    
+                    <div class="earth-container">
+                        <canvas id="earth3d" width="320" height="320"></canvas>
+                    </div>
+                    
+                    <div class="data-node"></div>
+                    <div class="data-node"></div>
+                    <div class="data-node"></div>
+                    <div class="data-node"></div>
+                    
+                    <div class="monitor-panel status-a">
+                        <div class="panel-label">系统状态</div>
+                        <div class="panel-value">● 运行正常</div><br>
+                        <div style="color:#4ade80;">在线率: 99.97%</div><br>
+                        <div>负载: 23.4%</div>
+                    </div>
+                    
+                    <div class="monitor-panel status-b">
+                        <div class="panel-label">网络状态</div>
+                        <div class="panel-value">节点数: 256</div><br>
+                        <div>延迟: 8ms</div><br>
+                        <div>带宽: 10 Gbps</div>
+                    </div>
+                    
+                    <div class="monitor-panel status-c">
+                        <div class="panel-label">安全防护</div>
+                        <div class="panel-value">加密方式: AES-256</div><br>
+                        <div style="color:#4ade80;">防火墙: 已启用</div><br>
+                        <div>协议版本: TLS 1.3</div>
+                    </div>
+                    
+                    <div class="monitor-panel status-d">
+                        <div class="panel-label">数据分析</div>
+                        <div class="panel-value">数据点: 120万</div><br>
+                        <div>查询量: 8.4K/s</div><br>
+                        <div>缓存命中率: 94.2%</div>
+                    </div>
+
+                    <div class="stream-line" style="top: 28%; left: 8%; width: 28%; transform: rotate(-18deg);"></div>
+                    <div class="stream-line" style="top: 55%; right: 6%; width: 32%; transform: rotate(22deg);"></div>
+                    <div class="stream-line" style="bottom: 22%; left: 15%; width: 24%; transform: rotate(-10deg);"></div>
+                    <div class="stream-line" style="bottom: 35%; right: 12%; width: 20%; transform: rotate(15deg);"></div>
+
+                    <canvas class="wave-container" id="waveCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const starCanvas = document.getElementById('starfield');
+        const starCtx = starCanvas.getContext('2d');
+
+        function resizeStarCanvas() {
+            starCanvas.width = window.innerWidth;
+            starCanvas.height = window.innerHeight;
+        }
+
+        resizeStarCanvas();
+        window.addEventListener('resize', resizeStarCanvas);
+
+        const stars = [];
+        const starCount = 180;
+
+        for (let i = 0; i < starCount; i++) {
+            stars.push({
+                x: Math.random() * starCanvas.width,
+                y: Math.random() * starCanvas.height,
+                size: Math.random() * 1.8 + 0.3,
+                speed: Math.random() * 0.3 + 0.05,
+                twinkleSpeed: Math.random() * 0.02 + 0.005,
+                twinklePhase: Math.random() * Math.PI * 2
+            });
+        }
+
+        let time = 0;
+
+        function renderStars() {
+            starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+
+            time += 0.016;
+
+            stars.forEach(star => {
+                star.y -= star.speed;
+                if (star.y < 0) {
+                    star.y = starCanvas.height;
+                    star.x = Math.random() * starCanvas.width;
+                }
+
+                const twinkle = Math.sin(time * star.twinkleSpeed * 60 + star.twinklePhase) * 0.4 + 0.6;
+                
+                starCtx.beginPath();
+                starCtx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                starCtx.fillStyle = `rgba(226, 232, 240, ${twinkle * 0.7})`;
+                starCtx.fill();
+
+                if (star.size > 1.2) {
+                    starCtx.beginPath();
+                    starCtx.arc(star.x, star.y, star.size * 2.5, 0, Math.PI * 2);
+                    starCtx.fillStyle = `rgba(226, 232, 240, ${twinkle * 0.1})`;
+                    starCtx.fill();
+                }
+            });
+
+            for (let i = 0; i < stars.length; i++) {
+                for (let j = i + 1; j < stars.length; j++) {
+                    const dx = stars[i].x - stars[j].x;
+                    const dy = stars[i].y - stars[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 100 && stars[i].size > 1 && stars[j].size > 1) {
+                        starCtx.beginPath();
+                        starCtx.moveTo(stars[i].x, stars[i].y);
+                        starCtx.lineTo(stars[j].x, stars[j].y);
+                        starCtx.strokeStyle = `rgba(148, 163, 184, ${0.08 * (1 - dist / 100)})`;
+                        starCtx.lineWidth = 0.5;
+                        starCtx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(renderStars);
+        }
+
+        renderStars();
+
+        const waveCanvas = document.getElementById('waveCanvas');
+        const waveCtx = waveCanvas.getContext('2d');
+
+        function setupWaveCanvas() {
+            waveCanvas.width = 280;
+            waveCanvas.height = 60;
+        }
+
+        setupWaveCanvas();
+
+        let waveOffset = 0;
+
+        function drawWaveform() {
+            waveCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+
+            const waves = [
+                { amplitude: 12, frequency: 0.025, speed: 0.04, color: 'rgba(34, 211, 238, 0.5)', offset: 0 },
+                { amplitude: 8, frequency: 0.035, speed: 0.06, color: 'rgba(168, 85, 247, 0.4)', offset: Math.PI / 3 },
+                { amplitude: 6, frequency: 0.05, speed: 0.08, color: 'rgba(56, 189, 248, 0.3)', offset: Math.PI / 1.5 }
+            ];
+
+            waves.forEach(wave => {
+                waveCtx.beginPath();
+                waveCtx.moveTo(0, waveCanvas.height / 2);
+
+                for (let x = 0; x <= waveCanvas.width; x++) {
+                    const y = waveCanvas.height / 2 + 
+                              Math.sin((x * wave.frequency) + (waveOffset * wave.speed) + wave.offset) * wave.amplitude +
+                              Math.sin((x * wave.frequency * 2.3) + (waveOffset * wave.speed * 1.5)) * (wave.amplitude * 0.3);
+                    waveCtx.lineTo(x, y);
+                }
+
+                waveCtx.strokeStyle = wave.color;
+                waveCtx.lineWidth = 1.5;
+                waveCtx.stroke();
+
+                waveCtx.lineTo(waveCanvas.width, waveCanvas.height);
+                waveCtx.lineTo(0, waveCanvas.height);
+                waveCtx.closePath();
+
+                const gradient = waveCtx.createLinearGradient(0, 0, 0, waveCanvas.height);
+                gradient.addColorStop(0, wave.color.replace('0.5)', '0.15)').replace('0.4)', '0.12)').replace('0.3)', '0.08)'));
+                gradient.addColorStop(1, 'transparent');
+                waveCtx.fillStyle = gradient;
+                waveCtx.fill();
+            });
+
+            waveOffset++;
+            requestAnimationFrame(drawWaveform);
+        }
+
+        drawWaveform();
+
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'floating-particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 10 + 's';
+            p.style.animationDuration = (Math.random() * 6 + 8) + 's';
+            document.body.appendChild(p);
+        }
+
+        const employeeIdInput = document.getElementById('employee_id');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const captchaGroup = document.getElementById('captchaGroup');
+        const captchaImage = document.getElementById('captchaImage');
+        const captchaInput = document.getElementById('captcha');
+
+        let captchaToken = null;
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('visible');
+            setTimeout(() => errorMessage.classList.remove('visible'), 3500);
+        }
+
+        function showCaptcha(token, image) {
+            captchaToken = token;
+            captchaImage.src = image;
+            captchaGroup.style.display = 'block';
+            captchaInput.value = '';
+            captchaInput.focus();
+        }
+
+        function hideCaptcha() {
+            captchaGroup.style.display = 'none';
+            captchaToken = null;
+            captchaInput.value = '';
+        }
+
+        captchaImage.addEventListener('click', function() {
+            fetch('/api/captcha/generate')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        captchaToken = data.token;
+                        captchaImage.src = data.image;
+                    }
+                });
+        });
+
+        function login() {
+            var employee_id = employeeIdInput.value.trim();
+            var password = passwordInput.value;
+
+            if (!employee_id || !password) {
+                showError('请输入账号和密码');
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = '登录中...';
+
+            var body = { employee_id: employee_id, password: password };
+            if (captchaToken) {
+                body.captcha_token = captchaToken;
+                body.captcha_answer = captchaInput.value.trim();
+            }
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    hideCaptcha();
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        fetch('/api/auth/check')
+                            .then(r => r.json())
+                            .then(authData => {
+                                if (authData.user && authData.user.role === 'admin') {
+                                    window.location.href = '/admin';
+                                } else if (authData.user && authData.user.role === 'class') {
+                                    window.location.href = '/total-table';
+                                } else {
+                                    window.location.href = '/dashboard';
+                                }
+                            });
+                    }
+                } else if (data.needCaptcha) {
+                    showCaptcha(data.captchaToken, data.captchaImage);
+                    showError(data.message || '请输入验证码');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = '登 录';
+                } else {
+                    showError(data.message || '登录失败');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = '登 录';
+                }
+            })
+            .catch(err => {
+                showError('网络错误，请稍后重试');
+                loginBtn.disabled = false;
+                loginBtn.textContent = '登 录';
+            });
+        }
+
+        loginBtn.addEventListener('click', login);
+
+        passwordInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') login();
+        });
+
+        captchaInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') login();
+        });
+
+        employeeIdInput.focus();
+
+        (function() {
+            const canvas = document.getElementById('earth3d');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 140;
+            
+            let rotationY = 0;
+            const rotationSpeed = 0.008;
+            
+            function toRadians(degrees) {
+                return degrees * Math.PI / 180;
+            }
+            
+            function project3D(x, y, z, rotY, tiltX) {
+                const cosY = Math.cos(rotY);
+                const sinY = Math.sin(rotY);
+                const cosX = Math.cos(tiltX);
+                const sinX = Math.sin(tiltX);
+                
+                const x1 = x * cosY - z * sinY;
+                const z1 = x * sinY + z * cosY;
+                const y1 = y * cosX - z1 * sinX;
+                const z2 = y * sinX + z1 * cosX;
+                
+                const scale = 400 / (400 + z2);
+                
+                return {
+                    x: centerX + x1 * scale,
+                    y: centerY + y1 * scale,
+                    z: z2,
+                    visible: z2 > -radius
+                };
+            }
+            
+            const continents = [
+                { name: 'north-america', points: [
+                    [-100, 55], [-95, 60], [-85, 62], [-75, 58], [-65, 48],
+                    [-55, 48], [-60, 42], [-68, 35], [-80, 28], [-90, 22],
+                    [-98, 20], [-105, 25], [-115, 32], [-125, 40], [-125, 50],
+                    [-120, 55], [-110, 58], [-100, 55]
+                ]},
+                { name: 'south-america', points: [
+                    [-78, 10], [-70, 12], [-60, 8], [-52, 0], [-45, -5],
+                    [-38, -15], [-45, -25], [-52, -33], [-58, -40], [-68, -53],
+                    [-72, -50], [-75, -40], [-75, -25], [-78, -15], [-80, -5],
+                    [-78, 10]
+                ]},
+                { name: 'europe', points: [
+                    [-10, 36], [0, 38], [5, 43], [10, 45], [14, 48],
+                    [20, 50], [25, 52], [30, 54], [28, 56], [24, 58],
+                    [18, 60], [10, 62], [4, 60], [-5, 55], [-10, 50],
+                    [-8, 44], [-10, 36]
+                ]},
+                { name: 'africa', points: [
+                    [-17, 15], [-10, 18], [0, 15], [10, 12], [15, 8],
+                    [20, 5], [25, 0], [28, -5], [30, -15], [28, -25],
+                    [25, -34], [18, -35], [12, -32], [8, -25], [5, -15],
+                    [3, -5], [-5, 5], [-10, 10], [-17, 15]
+                ]},
+                { name: 'asia', points: [
+                    [30, 42], [40, 45], [50, 48], [60, 52], [70, 55],
+                    [80, 55], [90, 52], [100, 48], [108, 42], [112, 35],
+                    [110, 28], [105, 22], [98, 18], [92, 15], [85, 12],
+                    [78, 10], [70, 15], [60, 20], [50, 25], [42, 28],
+                    [35, 32], [30, 38], [30, 42]
+                ]},
+                { name: 'australia', points: [
+                    [113, -12], [118, -14], [128, -15], [138, -15], [145, -13],
+                    [150, -18], [148, -25], [142, -32], [135, -37], [130, -35],
+                    [122, -33], [116, -30], [114, -25], [113, -18], [113, -12]
+                ]}
+            ];
+            
+            function latLonToXYZ(lat, lon) {
+                const latRad = toRadians(lat);
+                const lonRad = toRadians(lon);
+                const r = radius * 0.97;
+                
+                return {
+                    x: r * Math.cos(latRad) * Math.sin(lonRad),
+                    y: r * Math.sin(latRad),
+                    z: r * Math.cos(latRad) * Math.cos(lonRad)
+                };
+            }
+            
+            function drawSphere() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                const gradient = ctx.createRadialGradient(
+                    centerX - radius * 0.3,
+                    centerY - radius * 0.3,
+                    0,
+                    centerX,
+                    centerY,
+                    radius
+                );
+                gradient.addColorStop(0, '#60a5fa');
+                gradient.addColorStop(0.3, '#3b82f6');
+                gradient.addColorStop(0.7, '#2563eb');
+                gradient.addColorStop(1, '#1e40af');
+                
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.clip();
+                
+                ctx.globalAlpha = 0.08;
+                for (let i = 0; i < 360; i += 15) {
+                    ctx.beginPath();
+                    for (let j = -90; j <= 90; j += 3) {
+                        const point = latLonToXYZ(j, i);
+                        const projected = project3D(point.x, point.y, point.z, rotationY, toRadians(10));
+                        if (j === -90) {
+                            ctx.moveTo(projected.x, projected.y);
+                        } else {
+                            ctx.lineTo(projected.x, projected.y);
+                        }
+                    }
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+                
+                for (let j = -75; j <= 75; j += 15) {
+                    ctx.beginPath();
+                    for (let i = 0; i <= 360; i += 3) {
+                        const point = latLonToXYZ(j, i);
+                        const projected = project3D(point.x, point.y, point.z, rotationY, toRadians(10));
+                        if (i === 0) {
+                            ctx.moveTo(projected.x, projected.y);
+                        } else {
+                            ctx.lineTo(projected.x, projected.y);
+                        }
+                    }
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.clip();
+                
+                continents.forEach(continent => {
+                    const projectedPoints = continent.points.map(([lon, lat]) => {
+                        const xyz = latLonToXYZ(lat, lon);
+                        return project3D(xyz.x, xyz.y, xyz.z, rotationY, toRadians(10));
+                    });
+                    
+                    const avgZ = projectedPoints.reduce((sum, p) => sum + p.z, 0) / projectedPoints.length;
+                    
+                    if (avgZ > -radius * 0.3) {
+                        const alpha = Math.max(0.1, Math.min(0.9, (avgZ + radius) / (radius * 2)));
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(projectedPoints[0].x, projectedPoints[0].y);
+                        for (let i = 1; i < projectedPoints.length; i++) {
+                            ctx.lineTo(projectedPoints[i].x, projectedPoints[i].y);
+                        }
+                        ctx.closePath();
+                        
+                        const continentGradient = ctx.createLinearGradient(
+                            centerX - radius,
+                            centerY - radius,
+                            centerX + radius,
+                            centerY + radius
+                        );
+                        continentGradient.addColorStop(0, `rgba(74, 222, 128, ${alpha})`);
+                        continentGradient.addColorStop(0.5, `rgba(34, 197, 94, ${alpha})`);
+                        continentGradient.addColorStop(1, `rgba(21, 128, 61, ${alpha})`);
+                        
+                        ctx.fillStyle = continentGradient;
+                        ctx.fill();
+                        
+                        ctx.strokeStyle = `rgba(134, 239, 172, ${alpha * 0.6})`;
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+                    }
+                });
+                
+                ctx.restore();
+                
+                const atmosphereGradient = ctx.createRadialGradient(
+                    centerX,
+                    centerY,
+                    radius * 0.95,
+                    centerX,
+                    centerY,
+                    radius * 1.08
+                );
+                atmosphereGradient.addColorStop(0, 'rgba(96, 165, 250, 0)');
+                atmosphereGradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.15)');
+                atmosphereGradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+                
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius * 1.08, 0, Math.PI * 2);
+                ctx.fillStyle = atmosphereGradient;
+                ctx.fill();
+                
+                const highlightGradient = ctx.createRadialGradient(
+                    centerX - radius * 0.4,
+                    centerY - radius * 0.4,
+                    0,
+                    centerX,
+                    centerY,
+                    radius
+                );
+                highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.25)');
+                highlightGradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.08)');
+                highlightGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fillStyle = highlightGradient;
+                ctx.fill();
+                
+                const shadowGradient = ctx.createRadialGradient(
+                    centerX + radius * 0.3,
+                    centerY + radius * 0.3,
+                    0,
+                    centerX,
+                    centerY,
+                    radius
+                );
+                shadowGradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                shadowGradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.15)');
+                shadowGradient.addColorStop(1, 'rgba(0, 0, 0, 0.35)');
+                
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fillStyle = shadowGradient;
+                ctx.fill();
+            }
+            
+            function animate() {
+                rotationY += rotationSpeed;
+                drawSphere();
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        })();
+    </script>
+    <script src="/socket.io/socket.io.js"></script>
+</body>
+</html>
+
